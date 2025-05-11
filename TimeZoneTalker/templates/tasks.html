@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">
+                    {% if edit_mode %}
+                    <i class="fas fa-edit me-2"></i>Edit Task
+                    {% else %}
+                    <i class="fas fa-plus-circle me-2"></i>Add Task
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="post" {% if edit_mode %}action="{{ url_for('edit_task', task_id=form.id.data) }}"{% endif %}>
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.project_id.label(class="form-label") }}
+                        {{ form.project_id(class="form-select" + (" is-invalid" if form.project_id.errors else "")) }}
+                        {% for error in form.project_id.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        {% if not form.project_id.choices %}
+                            <div class="form-text text-warning">You need to create a project first.</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Task name") }}
+                        {% for error in form.name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3, placeholder="Task description") }}
+                        {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary", disabled=not form.project_id.choices) }}
+                        {% if edit_mode %}
+                        <a href="{{ url_for('tasks') }}" class="btn btn-outline-secondary">Cancel</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-tasks me-2"></i>Your Tasks</h3>
+            </div>
+            <div class="card-body">
+                {% if tasks %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Project</th>
+                                <th>Description</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                            <tr>
+                                <td>{{ task.name }}</td>
+                                <td>
+                                    <span style="color: {{ task.project.color }}">
+                                        {{ task.project.name }}
+                                    </span>
+                                </td>
+                                <td>{{ task.description[:50] + '...' if task.description and task.description|length > 50 else task.description or '-' }}</td>
+                                <td>{{ task.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ task.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ task.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ task.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel{{ task.id }}">Confirm Delete</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete the task "<strong>{{ task.name }}</strong>"?</p>
+                                                    <p class="text-danger">This will also delete all time entries associated with this task!</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form method="post" action="{{ url_for('delete_task', task_id=task.id) }}">
+                                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center p-5">
+                    <p class="text-muted">No tasks yet.<br>Create your first task to get started.</p>
+                    {% if not form.project_id.choices %}
+                    <a href="{{ url_for('projects') }}" class="btn btn-outline-primary">Create a Project First</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

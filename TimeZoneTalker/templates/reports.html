@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<!-- Weekly Chart -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-chart-line me-2"></i>Weekly Activity</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="weeklyChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Distribution -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-pie-chart me-2"></i>Project Distribution</h3>
+            </div>
+            <div class="card-body">
+                {% if project_stats.labels %}
+                <canvas id="projectChart"></canvas>
+                {% else %}
+                <div class="text-center p-5">
+                    <p class="text-muted">No project data available yet.<br>Start tracking time to see statistics.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-tasks me-2"></i>Project Summary (Last 30 Days)</h3>
+            </div>
+            <div class="card-body">
+                {% if project_totals %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th class="text-end">Total Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project_id, project in project_totals.items() %}
+                            <tr>
+                                <td>
+                                    <span style="color: {{ project.color }}">
+                                        {{ project.name }}
+                                    </span>
+                                </td>
+                                <td class="text-end fw-bold">{{ project.formatted_time }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center p-5">
+                    <p class="text-muted">No data available for the last 30 days.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Entries -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-list-alt me-2"></i>Recent Time Entries (Last 30 Days)</h3>
+            </div>
+            <div class="card-body">
+                {% if entries %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Project</th>
+                                <th>Task</th>
+                                <th>Description</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in entries %}
+                            <tr>
+                                <td>{{ entry.start_time.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span style="color: {{ entry.project.color }}">
+                                        {{ entry.project.name }}
+                                    </span>
+                                </td>
+                                <td>{{ entry.task.name if entry.task else '-' }}</td>
+                                <td>{{ entry.description[:50] + '...' if entry.description and entry.description|length > 50 else entry.description or '-' }}</td>
+                                <td>{{ entry.formatted_duration }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center p-5">
+                    <p class="text-muted">No time entries for the last 30 days.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Weekly Chart
+    try {
+        const weeklyData = {
+            labels: {{ weekly_stats.labels | tojson if weekly_stats.labels else '[]' }},
+            values: {{ weekly_stats.values | tojson if weekly_stats.values else '[]' }}
+        };
+        
+        if (document.getElementById('weeklyChart')) {
+            renderWeeklyChart('weeklyChart', weeklyData);
+        }
+    } catch (error) {
+        console.error('Error rendering weekly chart:', error);
+    }
+    
+    // Project Chart
+    try {
+        const projectData = {
+            labels: {{ project_stats.labels | tojson if project_stats.labels else '[]' }},
+            values: {{ project_stats.values | tojson if project_stats.values else '[]' }},
+            colors: {{ project_stats.colors | tojson if project_stats.colors else '[]' }}
+        };
+    
+    if (document.getElementById('projectChart') && projectData.labels.length > 0) {
+        renderProjectChart('projectChart', projectData);
+    }
+    } catch (error) {
+        console.error('Error rendering project chart:', error);
+    }
+});
+</script>
+{% endblock %}
