@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Timezone Converter{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-globe me-2"></i>Timezone Converter</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.source_timezone.label(class="form-label") }}
+                        {{ form.source_timezone(class="form-select" + (" is-invalid" if form.source_timezone.errors else "")) }}
+                        {% for error in form.source_timezone.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.target_timezone.label(class="form-label") }}
+                        {{ form.target_timezone(class="form-select" + (" is-invalid" if form.target_timezone.errors else "")) }}
+                        {% for error in form.target_timezone.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.date_time.label(class="form-label") }}
+                        {{ form.date_time(class="form-control" + (" is-invalid" if form.date_time.errors else ""), placeholder="YYYY-MM-DD HH:MM") }}
+                        {% for error in form.date_time.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">Use 24-hour format (e.g., 2023-07-21 14:30)</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+                
+                {% if result %}
+                <div class="mt-4">
+                    <div class="card bg-dark">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Conversion Result</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label class="form-label">Original Time:</label>
+                                        <div class="fs-5">{{ result.original }}</div>
+                                        <div class="text-muted">{{ result.original_tz }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label class="form-label">Converted Time:</label>
+                                        <div class="fs-5">{{ result.converted }}</div>
+                                        <div class="text-muted">{{ result.converted_tz }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Timezones Information -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Timezone Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>About Timezones</h5>
+                        <p>Timezones are regions where the same standard time is used. The world is divided into 24 timezones, each generally 15 degrees of longitude apart.</p>
+                        <p>The timezone converter helps you convert times between different timezones, which is particularly useful for:</p>
+                        <ul>
+                            <li>Scheduling meetings across different regions</li>
+                            <li>Planning international calls</li>
+                            <li>Tracking work hours for remote teams</li>
+                            <li>Planning travel itineraries</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Common Timezone Abbreviations</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Abbreviation</th>
+                                        <th>Timezone</th>
+                                        <th>UTC Offset</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>UTC</td>
+                                        <td>Coordinated Universal Time</td>
+                                        <td>+00:00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>EST</td>
+                                        <td>Eastern Standard Time</td>
+                                        <td>-05:00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PST</td>
+                                        <td>Pacific Standard Time</td>
+                                        <td>-08:00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>CET</td>
+                                        <td>Central European Time</td>
+                                        <td>+01:00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>IST</td>
+                                        <td>Indian Standard Time</td>
+                                        <td>+05:30</td>
+                                    </tr>
+                                    <tr>
+                                        <td>JST</td>
+                                        <td>Japan Standard Time</td>
+                                        <td>+09:00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/timezone.js') }}"></script>
+{% endblock %}
